@@ -1,4 +1,6 @@
 
+using Scalar.AspNetCore;
+
 namespace EduPlatform.WebApi
 {
     public class Program
@@ -19,6 +21,8 @@ namespace EduPlatform.WebApi
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapGet("/", () => Results.Redirect("/scalar/v1"));
+                app.MapScalarApiReference();
             }
 
             app.UseHttpsRedirection();
