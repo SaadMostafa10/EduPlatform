@@ -1,0 +1,6 @@
+@EduPlatform.WebApi_HostAddress = http://localhost:5268
+
+GET {{EduPlatform.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
