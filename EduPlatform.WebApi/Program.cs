@@ -2,8 +2,11 @@
 using Domain.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Persistence.Data;
 using Scalar.AspNetCore;
+using Services.Mapping;
+using Shared.Options;
 
 namespace EduPlatform.WebApi
 {
@@ -25,6 +28,10 @@ namespace EduPlatform.WebApi
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                             .AddEntityFrameworkStores<ApplicationDbContext>()
                             .AddDefaultTokenProviders();
+
+            builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+            builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
             var app = builder.Build();
 
