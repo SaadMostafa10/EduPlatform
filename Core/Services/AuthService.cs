@@ -24,19 +24,22 @@ namespace Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly JwtOptions _jwtOptions;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             ITokenService tokenService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IOptions<JwtOptions> jwtOptions)
+            IOptions<JwtOptions> jwtOptions,
+            IEmailService emailService)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _jwtOptions = jwtOptions.Value;
+            _emailService = emailService;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
@@ -107,9 +110,22 @@ namespace Services
             if (user is null)
                 throw new NotFoundException(nameof(ApplicationUser), request.Email);
 
-            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var otpCode = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
-            // TODO: send resetToken to the user's email via an Email Service
+            var otp = new PasswordResetOtp
+            {
+                Code = otpCode,
+                ExpiresOn = DateTime.UtcNow.AddMinutes(10),
+                UserId = user.Id
+            };
+
+            await _unitOfWork.Repository<PasswordResetOtp>().AddAsync(otp);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _emailService.SendEmailAsync(
+                user.Email!,
+                "Password Reset Code",
+                $"Your password reset code is: {otpCode}. It expires in 10 minutes.");
         }
 
         public async Task ResetPasswordAsync(ResetPasswordRequestDto request)
@@ -118,9 +134,22 @@ namespace Services
             if (user is null)
                 throw new NotFoundException(nameof(ApplicationUser), request.Email);
 
-            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            var spec = new ActiveOtpByUserAndCodeSpecification(user.Id, request.Otp);
+            var otpRepo = _unitOfWork.Repository<PasswordResetOtp>();
+
+            var storedOtp = await otpRepo.GetWithSpecAsync(spec);
+            if (storedOtp is null || !storedOtp.IsValid)
+                throw new BadRequestException("Invalid or expired OTP.");
+
+            var identityToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, identityToken, request.NewPassword);
+
             if (!result.Succeeded)
                 throw new BadRequestException(result.Errors.First().Description);
+
+            storedOtp.IsUsed = true;
+            otpRepo.Update(storedOtp);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         private async Task<AuthResponseDto> GenerateAuthResponseAsync(ApplicationUser user)

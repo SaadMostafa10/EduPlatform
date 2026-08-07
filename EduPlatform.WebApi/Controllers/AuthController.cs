@@ -8,6 +8,7 @@ namespace EduPlatform.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -46,12 +47,13 @@ namespace EduPlatform.WebApi.Controllers
         }
 
         [HttpPost("revoke-token")]
-        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> RevokeToken(RevokeTokenRequestDto request)
         {
             await _authService.RevokeTokenAsync(request);
-            return Ok();
+            return Ok(new { Message = "Token revoked successfully." });
         }
 
         [HttpPost("forgot-password")]
@@ -61,7 +63,7 @@ namespace EduPlatform.WebApi.Controllers
         public async Task<IActionResult> ForgotPassword(ForgotPasswordRequestDto request)
         {
             await _authService.ForgotPasswordAsync(request);
-            return Ok();
+            return Ok(new { Message = "Password reset OTP has been sent to your email." });
         }
 
         [HttpPost("reset-password")]
@@ -71,7 +73,7 @@ namespace EduPlatform.WebApi.Controllers
         public async Task<IActionResult> ResetPassword(ResetPasswordRequestDto request)
         {
             await _authService.ResetPasswordAsync(request);
-            return Ok();
+            return Ok(new { Message = "Password has been reset successfully." });
         }
     }
 }

@@ -15,4 +15,16 @@
     <ProjectReference Include="..\..\Core\Services.Abstractions\Services.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\DataSeeding\grades.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Update="Data\DataSeeding\grades.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>

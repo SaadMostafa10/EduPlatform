@@ -18,7 +18,7 @@ namespace EduPlatform.WebApi
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +63,9 @@ namespace EduPlatform.WebApi
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
             var app = builder.Build();
 
@@ -81,8 +84,22 @@ namespace EduPlatform.WebApi
 
 
             app.MapControllers();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var initializer = services.GetRequiredService<IDbInitializer>();
+                    await initializer.InitializeAsync();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while seeding or migrating the database.");
+                }
+            }
 
-            app.Run();
+            await app.RunAsync();
         }
     }
 }

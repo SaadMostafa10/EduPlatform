@@ -17,6 +17,7 @@ namespace Persistence.Data
         }
         public DbSet<Grade> Grades { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -47,6 +48,20 @@ namespace Persistence.Data
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.Property(rt => rt.Token).IsRequired();
+            });
+
+            builder.Entity<PasswordResetOtp>(entity =>
+            {
+                entity.ToTable("PasswordResetOtps");
+
+                entity.Property(o => o.Code)
+                      .IsRequired()
+                      .HasMaxLength(6);
+
+                entity.HasOne(o => o.User)
+                      .WithMany()
+                      .HasForeignKey(o => o.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

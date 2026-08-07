@@ -14,10 +14,11 @@ namespace Shared.Dtos.AuthDtos
         public string Email { get; set; }
 
         [Required]
-        public string Token { get; set; }
+        [StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits")]
+        public string Otp { get; set; }
 
         [Required]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
         public string NewPassword { get; set; }
 
         [Required]
