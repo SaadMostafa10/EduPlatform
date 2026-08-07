@@ -46,14 +46,14 @@ namespace EduPlatform.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpPost("revoke-token")]
+        [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> RevokeToken(RevokeTokenRequestDto request)
+        public async Task<IActionResult> Logout(RevokeTokenRequestDto request)
         {
             await _authService.RevokeTokenAsync(request);
-            return Ok(new { Message = "Token revoked successfully." });
+            return Ok(new { Message = "Logged out successfully." });
         }
 
         [HttpPost("forgot-password")]
