@@ -1,10 +1,12 @@
 
+using Domain.Contracts;
 using Domain.Models.Identity;
 using EduPlatform.WebApi.Middleware;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Persistence;
 using Persistence.Data;
 using Scalar.AspNetCore;
 using Services;
@@ -58,7 +60,9 @@ namespace EduPlatform.WebApi
 
             builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             var app = builder.Build();
 
