@@ -1,10 +1,14 @@
 
 using Domain.Models.Identity;
+using EduPlatform.WebApi.Middleware;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence.Data;
 using Scalar.AspNetCore;
+using Services;
+using Services.Abstractions;
 using Services.Mapping;
 using Shared.Options;
 
@@ -19,6 +23,27 @@ namespace EduPlatform.WebApi
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(x => x.Value?.Errors.Count > 0)
+                        .SelectMany(x => x.Value!.Errors)
+                        .Select(x => x.ErrorMessage)
+                        .ToList();
+
+                    var response = new ErrorResponse
+                    {
+                        StatusCode = StatusCodes.Status400BadRequest,
+                        Message = string.Join(" | ", errors)
+                    };
+
+                    return new BadRequestObjectResult(response);
+                };
+            });
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
@@ -33,6 +58,8 @@ namespace EduPlatform.WebApi
 
             builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
+            builder.Services.AddScoped<ITokenService, TokenService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -44,6 +71,7 @@ namespace EduPlatform.WebApi
             }
 
             app.UseHttpsRedirection();
+            app.UseMiddleware<GlobalExceptionMiddleware>();
             app.UseAuthentication();
             app.UseAuthorization();
 
