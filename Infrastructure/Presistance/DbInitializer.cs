@@ -2,6 +2,7 @@
 using Domain.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Persistence.Data;
 using System;
 using System.Collections.Generic;
@@ -17,14 +18,17 @@ namespace Persistence
         private readonly ApplicationDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IConfiguration _configuration;
 
         public DbInitializer(ApplicationDbContext dbContext,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration)
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _roleManager = roleManager;
+            _configuration = configuration;
         }
 
         public async Task InitializeAsync()
@@ -36,7 +40,7 @@ namespace Persistence
             }
 
             // Seed Identity Roles & Default Teacher Account
-            await AppIdentityDbContextSeed.SeedRolesAndUsersAsync(_userManager, _roleManager);
+            await AppIdentityDbContextSeed.SeedRolesAndUsersAsync(_userManager, _roleManager, _configuration);
 
             // Seed Grades
             if (!await _dbContext.Grades.AnyAsync())
