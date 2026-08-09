@@ -31,7 +31,7 @@ namespace Persistence
             // Seed Grades
             if (!await _dbContext.Grades.AnyAsync())
             {
-                var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"DataSeeding", "grades.json");
+                var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "DataSeeding", "grades.json");
 
                 if (!File.Exists(filePath))
                 {
