@@ -79,6 +79,7 @@ namespace EduPlatform.WebApi.Controllers
             await _authService.ResetPasswordAsync(request);
             return Ok(new { Message = "Password has been reset successfully." });
         }
+
         [HttpPost("create-assistant")]
         [Authorize(Roles = $"{UserRoles.Teacher},{UserRoles.Admin}")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
