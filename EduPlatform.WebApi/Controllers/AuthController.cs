@@ -40,6 +40,8 @@ namespace EduPlatform.WebApi.Controllers
         [HttpPost("refresh-token")]
         [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)] 
         public async Task<ActionResult<AuthResponseDto>> RefreshToken(RefreshTokenRequestDto request)
         {
             var result = await _authService.RefreshTokenAsync(request);
@@ -48,7 +50,7 @@ namespace EduPlatform.WebApi.Controllers
 
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Logout(RevokeTokenRequestDto request)
         {
