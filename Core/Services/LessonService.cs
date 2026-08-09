@@ -1,0 +1,87 @@
+﻿using AutoMapper;
+using Domain.Contracts;
+using Domain.Models.Lessons;
+using Services.Abstractions;
+using Services.Specifications.LessonSpecs;
+using Shared;
+using Shared.Dtos.LessonDtos;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Services
+{
+    public class LessonService : ILessonService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public LessonService(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<PaginationResponse<LessonResponseDto>> GetAllLessonsAsync(LessonSpecParams specParams)
+        {
+            var spec = new LessonWithGradeSpecification(specParams);
+            var countSpec = new LessonCountSpecification(specParams);
+
+            var lessons = await _unitOfWork.Repository<Lesson>().GetAllWithSpecAsync(spec);
+            var totalItems = await _unitOfWork.Repository<Lesson>().GetCountWithSpecAsync(countSpec);
+
+            var data = _mapper.Map<IReadOnlyList<LessonResponseDto>>(lessons);
+
+            return new PaginationResponse<LessonResponseDto>(specParams.PageIndex, specParams.PageSize, totalItems, data);
+        }
+
+        public async Task<LessonResponseDto?> GetLessonByIdAsync(int id)
+        {
+            var spec = new LessonWithGradeSpecification(id);
+            var lesson = await _unitOfWork.Repository<Lesson>().GetWithSpecAsync(spec);
+
+            if (lesson is null) return null;
+
+            return _mapper.Map<LessonResponseDto>(lesson);
+        }
+
+        public async Task<LessonResponseDto> CreateLessonAsync(CreateLessonRequestDto request)
+        {
+            var lesson = _mapper.Map<Lesson>(request);
+
+            await _unitOfWork.Repository<Lesson>().AddAsync(lesson);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Re-fetch to include Grade entity for correct DTO response
+            return await GetLessonByIdAsync(lesson.Id) ?? _mapper.Map<LessonResponseDto>(lesson);
+        }
+
+        public async Task<LessonResponseDto?> UpdateLessonAsync(int id, UpdateLessonRequestDto request)
+        {
+            var lesson = await _unitOfWork.Repository<Lesson>().GetByIdAsync(id);
+            if (lesson is null) return null;
+
+            _mapper.Map(request, lesson);
+
+            _unitOfWork.Repository<Lesson>().Update(lesson);
+            await _unitOfWork.SaveChangesAsync();
+
+            return await GetLessonByIdAsync(id);
+        }
+
+        public async Task<bool> DeleteLessonAsync(int id)
+        {
+            var lesson = await _unitOfWork.Repository<Lesson>().GetByIdAsync(id);
+            if (lesson is null) return false;
+
+            // Soft Delete Implementation
+            lesson.IsDeleted = true;
+            lesson.DeletedAt = DateTime.UtcNow;
+
+            _unitOfWork.Repository<Lesson>().Update(lesson);
+            return await _unitOfWork.SaveChangesAsync() > 0;
+        }
+    }
+}

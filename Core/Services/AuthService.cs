@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Services.Abstractions;
 using Services.Specifications.Auth;
+using Shared.Constants;
 using Shared.Dtos.AuthDtos;
 using Shared.Options;
 using System;
@@ -151,7 +152,112 @@ namespace Services
             otpRepo.Update(storedOtp);
             await _unitOfWork.SaveChangesAsync();
         }
+        public async Task<AuthResponseDto> CreateAssistantAsync(CreateAssistantDto dto)
+        {
+            var userExists = await _userManager.FindByEmailAsync(dto.Email);
+            if (userExists is not null)
+            {
+                return new AuthResponseDto
+                {
+                    IsAuthenticated = false,
+                    Message = "Email is already registered."
+                };
+            }
 
+            var assistant = new ApplicationUser
+            {
+                FullName = dto.DisplayName,
+                Email = dto.Email,
+                UserName = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                EmailConfirmed = true
+            };
+            string tempPassword = $"Asst#{Guid.NewGuid().ToString().Substring(0, 8)}!";
+
+            var result = await _userManager.CreateAsync(assistant, tempPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return new AuthResponseDto
+                {
+                    IsAuthenticated = false,
+                    Message = $"Failed to create assistant: {errors}"
+                };
+            }
+            await _userManager.AddToRoleAsync(assistant, UserRoles.Assistant);
+
+            await _emailService.SendEmailAsync(
+                dto.Email,
+                "Welcome! Your Assistant Account Credentials",
+                $"<p>Hello {dto.DisplayName},</p>" +
+                $"<p>You have been added as an assistant. Your temporary password is: <strong>{tempPassword}</strong></p>" +
+                $"<p>Please log in and change your password immediately.</p>"
+            );
+
+            return new AuthResponseDto
+            {
+                UserId = assistant.Id,
+                FullName = assistant.FullName,
+                Email = assistant.Email!,
+                IsAuthenticated = true,
+                Message = "Assistant account created successfully. Temporary credentials have been sent to their email."
+            };
+        }
+
+        public async Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                throw new Exception("User not found.");
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Failed to change password: {errors}");
+            }
+
+            return true;
+        }
+
+        public async Task<AuthResponseDto> ChangeEmailAsync(string userId, ChangeEmailDto dto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                throw new Exception("User not found.");
+
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
+            if (!isPasswordValid)
+                throw new Exception("Invalid current password.");
+
+            var existingUser = await _userManager.FindByEmailAsync(dto.NewEmail);
+            if (existingUser is not null && existingUser.Id != userId)
+                throw new Exception("Email is already taken by another user.");
+
+            user.Email = dto.NewEmail;
+            user.UserName = dto.NewEmail;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                throw new Exception("Failed to update email.");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // 2. Pass the roles list to CreateToken (Synchronously)
+            var newToken = _tokenService.CreateToken(user, roles);
+
+            return new AuthResponseDto
+            {
+                UserId = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                IsAuthenticated = true,
+                Token = newToken,
+                Roles = roles.ToList(),
+                Message = "Email updated successfully."
+            };
+        }
         private async Task<AuthResponseDto> GenerateAuthResponseAsync(ApplicationUser user)
         {
             var claims = new List<Claim>
