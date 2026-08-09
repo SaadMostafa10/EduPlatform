@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Domain.Models.Identity;
+using Domain.Models.Lessons;
 using Shared.Dtos.AuthDtos;
+using Shared.Dtos.LessonDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +23,14 @@ namespace Services.Mapping
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
 
             CreateMap<Grade, GradeDto>();
+
+            //
+            CreateMap<Lesson, LessonResponseDto>()
+                .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name));
+
+            CreateMap<CreateLessonRequestDto, Lesson>();
+
+            CreateMap<UpdateLessonRequestDto, Lesson>();
         }
     }
 }

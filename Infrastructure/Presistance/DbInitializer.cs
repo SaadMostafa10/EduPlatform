@@ -1,5 +1,6 @@
 ﻿using Domain.Contracts;
 using Domain.Models.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Data;
 using System;
@@ -14,10 +15,16 @@ namespace Persistence
     public class DbInitializer : IDbInitializer
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public DbInitializer(ApplicationDbContext dbContext)
+        public DbInitializer(ApplicationDbContext dbContext,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _dbContext = dbContext;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task InitializeAsync()
@@ -27,6 +34,9 @@ namespace Persistence
             {
                 await _dbContext.Database.MigrateAsync();
             }
+
+            // Seed Identity Roles & Default Teacher Account
+            await AppIdentityDbContextSeed.SeedRolesAndUsersAsync(_userManager, _roleManager);
 
             // Seed Grades
             if (!await _dbContext.Grades.AnyAsync())
