@@ -9,6 +9,7 @@ using Shared.Dtos.LessonDtos;
 namespace EduPlatform.WebApi.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class LessonsController : ControllerBase
     {
@@ -23,10 +24,18 @@ namespace EduPlatform.WebApi.Controllers
         [ProducesResponseType(typeof(PaginationResponse<LessonResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllLessons([FromQuery] LessonSpecParams specParams)
         {
-            var result = await _lessonService.GetAllLessonsAsync(specParams);
+            var isStudent = User.IsInRole(UserRoles.Student);
+            int? studentGradeId = null;
+            if (isStudent)
+            {
+                var gradeClaim = User.FindFirst("GradeId")?.Value;
+                studentGradeId = int.TryParse(gradeClaim, out var g) ? g : null;
+            }
+            var result = await _lessonService.GetAllLessonsAsync(specParams, isStudent, studentGradeId);
             return Ok(result);
         }
         [HttpGet("{id:int}")]
+        [Authorize]
         [ProducesResponseType(typeof(LessonResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetLessonById(int id)

@@ -55,6 +55,8 @@ namespace Services
             if (!result.Succeeded)
                 throw new BadRequestException(result.Errors.First().Description);
 
+            await _userManager.AddToRoleAsync(user, UserRoles.Student);
+
             return await GenerateAuthResponseAsync(user);
         }
 
@@ -260,14 +262,9 @@ namespace Services
         }
         private async Task<AuthResponseDto> GenerateAuthResponseAsync(ApplicationUser user)
         {
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, user.Id),
-                new(ClaimTypes.Email, user.Email!),
-                new("FullName", user.FullName)
-            };
+            var roles = await _userManager.GetRolesAsync(user);
 
-            var accessToken = _tokenService.GenerateAccessToken(claims);
+            var accessToken = _tokenService.CreateToken(user,roles);
             var (refreshTokenValue, refreshTokenExpiresOn) = _tokenService.GenerateRefreshToken();
 
             var refreshToken = new RefreshToken
@@ -286,6 +283,7 @@ namespace Services
             response.TokenExpiresOn = DateTime.UtcNow.AddMinutes(_jwtOptions.DurationInMinutes);
             response.RefreshToken = refreshTokenValue;
             response.RefreshTokenExpiresOn = refreshTokenExpiresOn;
+            response.Roles = roles.ToList();
 
             return response;
         }

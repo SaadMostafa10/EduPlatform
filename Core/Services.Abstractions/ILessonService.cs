@@ -10,7 +10,7 @@ namespace Services.Abstractions
 {
     public interface ILessonService
     {
-        Task<PaginationResponse<LessonResponseDto>> GetAllLessonsAsync(LessonSpecParams specParams);
+        Task<PaginationResponse<LessonResponseDto>> GetAllLessonsAsync(LessonSpecParams specParams, bool isStudent, int? studentGradeId);
         Task<LessonResponseDto?> GetLessonByIdAsync(int id);
         Task<LessonResponseDto> CreateLessonAsync(CreateLessonRequestDto request);
         Task<LessonResponseDto?> UpdateLessonAsync(int id, UpdateLessonRequestDto request);

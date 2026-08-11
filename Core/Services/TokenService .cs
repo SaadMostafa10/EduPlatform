@@ -59,6 +59,11 @@ namespace Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
+            if (user.GradeId.HasValue)
+            {
+                authClaims.Add(new Claim("GradeId", user.GradeId.Value.ToString()));
+            }
+
             foreach (var role in roles)
             {
                 authClaims.Add(new Claim(ClaimTypes.Role, role));

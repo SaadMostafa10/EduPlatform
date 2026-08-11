@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Contracts;
+using Domain.Exceptions;
 using Domain.Models.Lessons;
 using Services.Abstractions;
 using Services.Specifications.LessonSpecs;
@@ -24,8 +25,15 @@ namespace Services
             _mapper = mapper;
         }
 
-        public async Task<PaginationResponse<LessonResponseDto>> GetAllLessonsAsync(LessonSpecParams specParams)
+        public async Task<PaginationResponse<LessonResponseDto>> GetAllLessonsAsync(LessonSpecParams specParams, bool isStudent, int? studentGradeId)
         {
+            if (isStudent)
+            {
+                if (!studentGradeId.HasValue)
+                    throw new BadRequestException("Student account has no assigned grade.");
+                specParams.GradeId = studentGradeId.Value;
+            }
+
             var spec = new LessonWithGradeSpecification(specParams);
             var countSpec = new LessonCountSpecification(specParams);
 
