@@ -210,14 +210,14 @@ namespace Services
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user is null)
-                throw new Exception("User not found.");
+                throw new NotFoundException(nameof(ApplicationUser), userId);
 
             var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
 
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception($"Failed to change password: {errors}");
+                throw new BadRequestException($"Failed to change password: {errors}");
             }
 
             return true;
@@ -227,38 +227,24 @@ namespace Services
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user is null)
-                throw new Exception("User not found.");
+                throw new NotFoundException(nameof(ApplicationUser), userId);
 
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
             if (!isPasswordValid)
-                throw new Exception("Invalid current password.");
+                throw new BadRequestException("Invalid current password.");
 
             var existingUser = await _userManager.FindByEmailAsync(dto.NewEmail);
             if (existingUser is not null && existingUser.Id != userId)
-                throw new Exception("Email is already taken by another user.");
+                throw new BadRequestException("Email is already taken by another user.");
 
             user.Email = dto.NewEmail;
             user.UserName = dto.NewEmail;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
-                throw new Exception("Failed to update email.");
+                throw new BadRequestException("Failed to update email.");
 
-            var roles = await _userManager.GetRolesAsync(user);
-
-            // 2. Pass the roles list to CreateToken (Synchronously)
-            var newToken = _tokenService.CreateToken(user, roles);
-
-            return new AuthResponseDto
-            {
-                UserId = user.Id,
-                FullName = user.FullName,
-                Email = user.Email,
-                IsAuthenticated = true,
-                Token = newToken,
-                Roles = roles.ToList(),
-                Message = "Email updated successfully."
-            };
+            return await GenerateAuthResponseAsync(user);
         }
         private async Task<AuthResponseDto> GenerateAuthResponseAsync(ApplicationUser user)
         {
