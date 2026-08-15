@@ -1,6 +1,7 @@
 ﻿using Domain.Models.Lessons;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,5 +21,6 @@ namespace Shared.Dtos.LessonDtos
         public int GradeId { get; set; }
         public string GradeName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public int? MaxViews { get; set; }
     }
 }

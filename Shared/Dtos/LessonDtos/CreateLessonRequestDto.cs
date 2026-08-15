@@ -16,7 +16,8 @@ namespace Shared.Dtos.LessonDtos
         public string Description { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "YouTube URL is required.")]
-        [Url(ErrorMessage = "Please enter a valid URL.")]
+        [RegularExpression(@"^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)[\w\-]{11}((\?|&|\/)\S*)?$",
+        ErrorMessage = "Invalid YouTube URL format.")]
         public string YouTubeUrl { get; set; } = string.Empty;
 
         [Range(1, 1000, ErrorMessage = "Duration must be at least 1 minute.")]
@@ -29,5 +30,7 @@ namespace Shared.Dtos.LessonDtos
 
         [Required(ErrorMessage = "Grade is required.")]
         public int GradeId { get; set; }
+        [Range(1, 1000, ErrorMessage = "Max views must be between 1 and 1000.")]
+        public int? MaxViews { get; set; }
     }
 }

@@ -69,6 +69,12 @@ namespace Services
 
         public async Task<LessonResponseDto> CreateLessonAsync(CreateLessonRequestDto request)
         {
+            if (request.IsFree && request.Price != 0)
+                throw new BadRequestException("Free lessons must have a price of 0.");
+
+            if (!request.IsFree && request.Price <= 0)
+                throw new BadRequestException("Paid lessons must have a price greater than 0.");
+
             var lesson = _mapper.Map<Lesson>(request);
 
             await _unitOfWork.Repository<Lesson>().AddAsync(lesson);
@@ -80,6 +86,12 @@ namespace Services
 
         public async Task<LessonResponseDto?> UpdateLessonAsync(int id, UpdateLessonRequestDto request)
         {
+            if (request.IsFree && request.Price != 0)
+                throw new BadRequestException("Free lessons must have a price of 0.");
+
+            if (!request.IsFree && request.Price <= 0)
+                throw new BadRequestException("Paid lessons must have a price greater than 0.");
+
             var lesson = await _unitOfWork.Repository<Lesson>().GetByIdAsync(id);
             if (lesson is null) return null;
 
