@@ -26,6 +26,8 @@ namespace Services
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ILessonService, LessonService>();
+            services.AddScoped<IGradeService, GradeService>();
 
             return services;
         }

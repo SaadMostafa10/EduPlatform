@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Domain.Models.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Services.Abstractions;
 using Shared.Options;
@@ -46,5 +48,44 @@ namespace Services
 
             return (token, expiresOn);
         }
+
+        public string CreateToken(ApplicationUser user, IList<string> roles)
+        {
+            var authClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email!),
+                new Claim(ClaimTypes.GivenName, user.FullName ?? string.Empty),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            if (user.GradeId.HasValue)
+            {
+                authClaims.Add(new Claim("GradeId", user.GradeId.Value.ToString()));
+            }
+
+            foreach (var role in roles)
+            {
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
+            var credentials = new SigningCredentials(authKey, SecurityAlgorithms.HmacSha256);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(authClaims),
+                Issuer = _jwtOptions.Issuer,
+                Audience = _jwtOptions.Audience,
+                Expires = DateTime.UtcNow.AddMinutes(_jwtOptions.DurationInMinutes),
+                SigningCredentials = credentials
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+        }
+
     }
 }

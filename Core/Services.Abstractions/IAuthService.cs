@@ -20,5 +20,9 @@ namespace Services.Abstractions
         Task ForgotPasswordAsync(ForgotPasswordRequestDto request);
 
         Task ResetPasswordAsync(ResetPasswordRequestDto request);
+
+        Task<AuthResponseDto> CreateAssistantAsync(CreateAssistantDto dto);
+        Task<bool> ChangePasswordAsync(string userId, ChangePasswordDto dto);
+        Task<AuthResponseDto> ChangeEmailAsync(string userId, ChangeEmailDto dto);
     }
 }

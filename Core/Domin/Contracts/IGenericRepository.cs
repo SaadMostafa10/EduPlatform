@@ -11,6 +11,9 @@ namespace Domain.Contracts
         Task<T?> GetByIdAsync(object id);
 
         Task<T?> GetWithSpecAsync(ISpecifications<T> spec);
+        Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecifications<T> spec);
+
+        Task<int> GetCountWithSpecAsync(ISpecifications<T> spec);
 
         Task AddAsync(T entity);
 

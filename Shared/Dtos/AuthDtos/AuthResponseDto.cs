@@ -17,5 +17,6 @@ namespace Shared.Dtos.AuthDtos
         public string RefreshToken { get; set; }
         public DateTime RefreshTokenExpiresOn { get; set; }
         public string? Message { get; set; }
+        public List<string> Roles { get; set; } = new();
     }
 }

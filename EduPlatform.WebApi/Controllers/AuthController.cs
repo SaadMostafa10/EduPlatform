@@ -1,7 +1,9 @@
 ﻿using EduPlatform.WebApi.Middleware;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Services.Abstractions;
+using Shared.Constants;
 using Shared.Dtos.AuthDtos;
 
 namespace EduPlatform.WebApi.Controllers
@@ -76,6 +78,57 @@ namespace EduPlatform.WebApi.Controllers
         {
             await _authService.ResetPasswordAsync(request);
             return Ok(new { Message = "Password has been reset successfully." });
+        }
+
+        [HttpPost("create-assistant")]
+        [Authorize(Roles = $"{UserRoles.Teacher},{UserRoles.Admin}")]
+        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> CreateAssistant([FromBody] CreateAssistantDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _authService.CreateAssistantAsync(dto);
+
+            if (!result.IsAuthenticated)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            await _authService.ChangePasswordAsync(userId, dto);
+
+            return Ok(new { Message = "Password changed successfully." });
+        }
+
+        [HttpPost("change-email")]
+        [Authorize]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var result = await _authService.ChangeEmailAsync(userId, dto);
+
+            return Ok(result);
         }
     }
 }

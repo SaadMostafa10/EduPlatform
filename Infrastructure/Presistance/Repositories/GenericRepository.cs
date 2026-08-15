@@ -25,7 +25,7 @@ namespace Persistence.Repositories
 
         public async Task<T?> GetWithSpecAsync(ISpecifications<T> spec)
         {
-            return await _context.Set<T>().FirstOrDefaultAsync(spec.Criteria);
+            return await ApplySpecification(spec).FirstOrDefaultAsync();
         }
 
         public async Task AddAsync(T entity)
@@ -40,6 +40,20 @@ namespace Persistence.Repositories
         public void Delete(T entity)
         {
             _context.Set<T>().Remove(entity);
+        }
+
+        public async Task<IReadOnlyList<T>> GetAllWithSpecAsync(ISpecifications<T> spec)
+        {
+            return await ApplySpecification(spec).ToListAsync();
+        }
+
+        public async Task<int> GetCountWithSpecAsync(ISpecifications<T> spec)
+        {
+            return await ApplySpecification(spec).CountAsync();
+        }
+        private IQueryable<T> ApplySpecification(ISpecifications<T> spec)
+        {
+            return SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
         }
     }
 }

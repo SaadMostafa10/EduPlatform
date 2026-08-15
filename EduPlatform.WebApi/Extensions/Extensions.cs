@@ -70,7 +70,10 @@ namespace EduPlatform.WebApi.Extensions
         private static IServiceCollection AddOpenApiServices(
             this IServiceCollection services)
         {
-            services.AddOpenApi();
+            services.AddOpenApi(options =>
+            {
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+            });
 
             return services;
         }
