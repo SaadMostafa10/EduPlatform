@@ -16,7 +16,7 @@ namespace Domain.Models.Lessons
         public int DurationInMinutes { get; set; }
         public decimal Price { get; set; }
         public bool IsFree { get; set; }
-        public LessonStatus Status { get; set; } = LessonStatus.Draft;
+        public LessonStatus Status { get; set; } = LessonStatus.Published;
 
         // FK
         public int GradeId { get; set; }

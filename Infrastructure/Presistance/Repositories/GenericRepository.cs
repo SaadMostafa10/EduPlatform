@@ -25,7 +25,7 @@ namespace Persistence.Repositories
 
         public async Task<T?> GetWithSpecAsync(ISpecifications<T> spec)
         {
-            return await _context.Set<T>().FirstOrDefaultAsync(spec.Criteria);
+            return await ApplySpecification(spec).FirstOrDefaultAsync();
         }
 
         public async Task AddAsync(T entity)

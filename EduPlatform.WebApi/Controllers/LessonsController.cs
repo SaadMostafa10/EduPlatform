@@ -21,6 +21,7 @@ namespace EduPlatform.WebApi.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         [ProducesResponseType(typeof(PaginationResponse<LessonResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllLessons([FromQuery] LessonSpecParams specParams)
         {
@@ -40,7 +41,16 @@ namespace EduPlatform.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetLessonById(int id)
         {
-            var lesson = await _lessonService.GetLessonByIdAsync(id);
+            var isStudent = User.IsInRole(UserRoles.Student);
+            int ? studentGradeId = null;
+            if (isStudent)
+            {
+                var gradeClaim = User.FindFirst("GradeId")?.Value;
+                studentGradeId = int.TryParse(gradeClaim, out var g) ? g : null;
+            }
+            
+            var lesson = await _lessonService.GetLessonByIdAsync(id, isStudent, studentGradeId);
+
             if (lesson is null)
                 return NotFound(new { message = $"Lesson with ID {id} was not found." });
 

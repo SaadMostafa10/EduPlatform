@@ -45,14 +45,26 @@ namespace Services
             return new PaginationResponse<LessonResponseDto>(specParams.PageIndex, specParams.PageSize, totalItems, data);
         }
 
-        public async Task<LessonResponseDto?> GetLessonByIdAsync(int id)
+        public async Task<LessonResponseDto?> GetLessonByIdAsync(int id, bool isStudent, int? studentGradeId)
+        {
+            var lessonDto = await GetLessonDtoByIdAsync(id);
+            if (lessonDto is null) return null;
+
+            if (isStudent)
+            {
+                if (!studentGradeId.HasValue)
+                    throw new BadRequestException("Student account has no assigned grade.");
+
+                if (lessonDto.GradeId != studentGradeId.Value)
+                    return null;
+            }
+            return lessonDto;
+        }
+        private async Task<LessonResponseDto?> GetLessonDtoByIdAsync(int id)
         {
             var spec = new LessonWithGradeSpecification(id);
             var lesson = await _unitOfWork.Repository<Lesson>().GetWithSpecAsync(spec);
-
-            if (lesson is null) return null;
-
-            return _mapper.Map<LessonResponseDto>(lesson);
+            return lesson is null ? null : _mapper.Map<LessonResponseDto>(lesson);
         }
 
         public async Task<LessonResponseDto> CreateLessonAsync(CreateLessonRequestDto request)
@@ -63,7 +75,7 @@ namespace Services
             await _unitOfWork.SaveChangesAsync();
 
             // Re-fetch to include Grade entity for correct DTO response
-            return await GetLessonByIdAsync(lesson.Id) ?? _mapper.Map<LessonResponseDto>(lesson);
+            return await GetLessonDtoByIdAsync(lesson.Id) ?? _mapper.Map<LessonResponseDto>(lesson);
         }
 
         public async Task<LessonResponseDto?> UpdateLessonAsync(int id, UpdateLessonRequestDto request)
@@ -76,7 +88,7 @@ namespace Services
             _unitOfWork.Repository<Lesson>().Update(lesson);
             await _unitOfWork.SaveChangesAsync();
 
-            return await GetLessonByIdAsync(id);
+            return await GetLessonDtoByIdAsync(id);
         }
 
         public async Task<bool> DeleteLessonAsync(int id)
