@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Contracts;
-using Domain.Models.Identity;
+using Domain.Models.Common;
 using Services.Abstractions;
 using Services.Specifications.GradeSpecs;
 using Shared.Dtos.AuthDtos;

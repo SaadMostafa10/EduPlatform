@@ -1,4 +1,4 @@
-﻿using Domain.Models.Identity;
+﻿using Domain.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Models.Lessons
 {
-    public class Lesson
+    public class Lesson : AuditableEntity
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
@@ -22,9 +22,6 @@ namespace Domain.Models.Lessons
         public int GradeId { get; set; }
         public Grade Grade { get; set; } = null!;
 
-        public bool IsDeleted { get; set; } = false;
-        public DateTime? DeletedAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int? MaxViews { get; set; }
     }
 }

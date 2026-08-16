@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Domain.Models.Common;
 using Domain.Models.Identity;
 using Domain.Models.Lessons;
 using Shared.Dtos.AuthDtos;
