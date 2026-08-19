@@ -9,7 +9,7 @@ namespace Domain.Contracts
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<TEntity> Repository<TEntity>() where TEntity : class;
-
+        ICouponRepository CouponRepository { get; }
         Task<int> SaveChangesAsync();
     }
 }

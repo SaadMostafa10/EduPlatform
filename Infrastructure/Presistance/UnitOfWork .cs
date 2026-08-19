@@ -14,6 +14,8 @@ namespace Persistence
         private readonly ApplicationDbContext _context;
         private readonly Dictionary<string, object> _repositories = new();
 
+        private ICouponRepository? _couponRepository;
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
@@ -31,6 +33,8 @@ namespace Persistence
 
             return (IGenericRepository<TEntity>)_repositories[type]!;
         }
+
+        public ICouponRepository CouponRepository => _couponRepository ??= new CouponRepository(_context);
 
         public async Task<int> SaveChangesAsync()
             => await _context.SaveChangesAsync();
