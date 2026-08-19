@@ -1,0 +1,19 @@
+﻿using Shared;
+using Shared.Dtos.LessonDtos;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Services.Abstractions
+{
+    public interface ILessonService
+    {
+        Task<PaginationResponse<LessonResponseDto>> GetAllLessonsAsync(LessonSpecParams specParams, bool isStudent, int? studentGradeId);
+        Task<LessonResponseDto?> GetLessonByIdAsync(int id, bool isStudent, int? studentGradeId);
+        Task<LessonResponseDto> CreateLessonAsync(CreateLessonRequestDto request);
+        Task<LessonResponseDto?> UpdateLessonAsync(int id, UpdateLessonRequestDto request);
+        Task<bool> DeleteLessonAsync(int id);
+    }
+}
