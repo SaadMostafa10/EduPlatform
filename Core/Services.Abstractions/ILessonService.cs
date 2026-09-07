@@ -15,5 +15,6 @@ namespace Services.Abstractions
         Task<LessonResponseDto> CreateLessonAsync(CreateLessonRequestDto request);
         Task<LessonResponseDto?> UpdateLessonAsync(int id, UpdateLessonRequestDto request);
         Task<bool> DeleteLessonAsync(int id);
+        Task<IReadOnlyList<LessonLookupDto>> GetLessonsByGradeIdAsync(int gradeId);
     }
 }

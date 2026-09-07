@@ -115,5 +115,13 @@ namespace Services
             _unitOfWork.Repository<Lesson>().Update(lesson);
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
+
+        public async Task<IReadOnlyList<LessonLookupDto>> GetLessonsByGradeIdAsync(int gradeId)
+        {
+            var spec = new LessonsByGradeSpecification(gradeId);
+            var lessons = await _unitOfWork.Repository<Lesson>().GetAllWithSpecAsync(spec);
+
+            return _mapper.Map<IReadOnlyList<LessonLookupDto>>(lessons);
+        }
     }
 }

@@ -16,8 +16,8 @@ namespace Domain.Models.Coupons
         public int GradeId { get; set; }
         public Grade Grade { get; set; } = null!;
 
-        public int? LessonId { get; set; }
-        public Lesson? Lesson { get; set; }
+        public int LessonId { get; set; }
+        public Lesson Lesson { get; set; } = null!;
 
         public int MaxUsage { get; set; }
         public int UsedCount { get; set; } = 0;

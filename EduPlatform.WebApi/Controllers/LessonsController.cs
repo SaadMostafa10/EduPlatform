@@ -98,5 +98,13 @@ namespace EduPlatform.WebApi.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("by-grade/{gradeId}")]
+        [ProducesResponseType(typeof(IReadOnlyList<LessonLookupDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetLessonsByGrade(int gradeId)
+        {
+            var lessons = await _lessonService.GetLessonsByGradeIdAsync(gradeId);
+            return Ok(lessons);
+        }
     }
 }

@@ -9,6 +9,7 @@ using Persistence;
 using Persistence.Data;
 using Scalar.AspNetCore;
 using Services;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using System.Text;
 
 namespace EduPlatform.WebApi.Extensions
@@ -25,6 +26,7 @@ namespace EduPlatform.WebApi.Extensions
             services.AddInfrastructureServices(configuration);
             services.AddApplicationServices(configuration);
             services.AddMvcConfiguration();
+            services.AddCustomFluentValidation();
 
             return services;
         }
@@ -141,6 +143,12 @@ namespace EduPlatform.WebApi.Extensions
             app.MapControllers();
 
             return app;
+        }
+
+        public static IServiceCollection AddCustomFluentValidation(this IServiceCollection services)
+        {
+            services.AddFluentValidationAutoValidation();
+            return services;
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Domain.Models.Common;
+using Domain.Models.Coupons;
 using Domain.Models.Identity;
 using Domain.Models.Lessons;
 using Shared.Dtos.AuthDtos;
+using Shared.Dtos.CouponDtos;
 using Shared.Dtos.LessonDtos;
 using System;
 using System.Collections.Generic;
@@ -32,6 +34,12 @@ namespace Services.Mapping
             CreateMap<CreateLessonRequestDto, Lesson>();
 
             CreateMap<UpdateLessonRequestDto, Lesson>();
+
+            CreateMap<Lesson, LessonLookupDto>();
+
+            CreateMap<Coupon, CouponDto>()
+                .ForMember(dest => dest.GradeName, opt => opt.MapFrom(src => src.Grade.Name))
+                .ForMember(dest => dest.LessonTitle, opt => opt.MapFrom(src => src.Lesson.Title));
         }
     }
 }
